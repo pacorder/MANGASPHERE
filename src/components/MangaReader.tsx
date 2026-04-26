@@ -33,6 +33,7 @@ export function MangaReader({ manga, currentIndex, settings, onPageChange }: Man
     return (
       <div 
         ref={containerRef}
+        id="reader-content"
         className="w-full flex flex-col items-center bg-black min-h-screen overflow-y-auto px-4 md:px-0"
       >
         {manga.pages.map((page, index) => (
@@ -58,28 +59,50 @@ export function MangaReader({ manga, currentIndex, settings, onPageChange }: Man
   }
 
   const isRTL = settings.mode === 'horizontal-rtl';
-  const currentPage = manga.pages[currentIndex];
+  const isDouble = settings.viewMode === 'double';
+
+  // Get pages to show
+  const pagesToShow: MangaPage[] = [];
+  if (isDouble) {
+    // If double, show current and next (or prev depending on logic)
+    // Convention: current is always the 'starting' page of the spread
+    // In LTR: current is left, current+1 is right
+    // In RTL: current is right, current+1 is left
+    pagesToShow.push(manga.pages[currentIndex]);
+    if (currentIndex + 1 < manga.pages.length) {
+      pagesToShow.push(manga.pages[currentIndex + 1]);
+    }
+  } else {
+    pagesToShow.push(manga.pages[currentIndex]);
+  }
 
   return (
-    <div className="w-full h-screen bg-black flex items-center justify-center overflow-hidden relative">
+    <div id="reader-content" className="w-full h-screen bg-black flex items-center justify-center overflow-hidden relative">
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentIndex}
+          key={currentIndex + (isDouble ? '-double' : '-single')}
           initial={{ opacity: 0, x: isRTL ? 100 : -100 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: isRTL ? -100 : 100 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="w-full h-full flex items-center justify-center p-4 md:p-8"
+          className={cn(
+            "w-full h-full flex items-center justify-center p-4 md:p-8 gap-1",
+            isRTL && "flex-row-reverse"
+          )}
         >
-          <img
-            src={currentPage.url}
-            alt={currentPage.name}
-            className={cn(
-              "max-w-full max-h-full object-contain shadow-2xl transition-all duration-300",
-              !loadedImages.has(currentIndex) && "opacity-0 scale-95"
-            )}
-            onLoad={() => handleImageLoad(currentIndex)}
-          />
+          {pagesToShow.map((page, idx) => (
+            <img
+              key={page.url}
+              src={page.url}
+              alt={page.name}
+              className={cn(
+                "max-h-full object-contain shadow-2xl transition-all duration-300",
+                isDouble ? "max-w-[50%]" : "max-w-full",
+                !loadedImages.has(currentIndex + idx) && "opacity-0 scale-95"
+              )}
+              onLoad={() => handleImageLoad(currentIndex + idx)}
+            />
+          ))}
         </motion.div>
       </AnimatePresence>
 
@@ -87,12 +110,18 @@ export function MangaReader({ manga, currentIndex, settings, onPageChange }: Man
       <div className="absolute inset-0 flex pointer-events-none">
         <div 
           className="w-1/3 h-full cursor-pointer pointer-events-auto"
-          onClick={() => onPageChange(isRTL ? currentIndex + 1 : currentIndex - 1)}
+          onClick={() => {
+            const step = isDouble ? 2 : 1;
+            onPageChange(isRTL ? currentIndex + step : currentIndex - step);
+          }}
         />
         <div className="w-1/3 h-full" />
         <div 
           className="w-1/3 h-full cursor-pointer pointer-events-auto"
-          onClick={() => onPageChange(isRTL ? currentIndex - 1 : currentIndex + 1)}
+          onClick={() => {
+            const step = isDouble ? 2 : 1;
+            onPageChange(isRTL ? currentIndex - step : currentIndex + step);
+          }}
         />
       </div>
     </div>

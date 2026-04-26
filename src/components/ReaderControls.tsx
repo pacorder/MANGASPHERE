@@ -7,12 +7,18 @@ import {
   Layout, 
   ArrowDown,
   Maximize2,
-  X
+  X,
+  FileImage,
+  FileText,
+  Columns,
+  Square
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MangaFile } from '@/src/lib/cbz';
 import { ReaderSettings, ReadingMode } from '@/src/types/manga';
 import { cn } from '@/src/lib/utils';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 interface ReaderControlsProps {
   manga: MangaFile;
@@ -34,6 +40,30 @@ export function ReaderControls({
   visible 
 }: ReaderControlsProps) {
   const progress = ((currentIndex + 1) / manga.pages.length) * 100;
+
+  const handleExportPNG = async () => {
+    const element = document.getElementById('reader-content');
+    if (!element) return;
+    const canvas = await html2canvas(element, { useCORS: true });
+    const link = document.createElement('a');
+    link.download = `${manga.name}-page-${currentIndex + 1}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
+  const handleExportPDF = async () => {
+    const element = document.getElementById('reader-content');
+    if (!element) return;
+    const canvas = await html2canvas(element, { useCORS: true });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({
+      orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+      unit: 'px',
+      format: [canvas.width, canvas.height]
+    });
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save(`${manga.name}-page-${currentIndex + 1}.pdf`);
+  };
 
   return (
     <AnimatePresence>
@@ -82,12 +112,18 @@ export function ReaderControls({
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="flex bg-black p-1.5 border border-white/5 rounded-2xl">
+                <div className="flex bg-black p-1.5 border border-white/5 rounded-2xl gap-1">
                   <ModeButton 
                     active={settings.mode === 'horizontal-rtl'} 
                     onClick={() => onSettingsChange({ mode: 'horizontal-rtl' })}
                     icon={<ArrowDown className="w-3 h-3 rotate-90" />}
-                    label="RTL"
+                    label="MANGA (RTL)"
+                  />
+                  <ModeButton 
+                    active={settings.mode === 'horizontal-ltr'} 
+                    onClick={() => onSettingsChange({ mode: 'horizontal-ltr' })}
+                    icon={<ArrowDown className="w-3 h-3 -rotate-90" />}
+                    label="COMIC (LTR)"
                   />
                   <ModeButton 
                     active={settings.mode === 'vertical'} 
@@ -96,7 +132,41 @@ export function ReaderControls({
                     label="STRIP"
                   />
                 </div>
+
+                <div className="flex bg-black p-1.5 border border-white/5 rounded-2xl gap-1">
+                  <ModeButton 
+                    active={settings.viewMode === 'single'} 
+                    onClick={() => onSettingsChange({ viewMode: 'single' })}
+                    icon={<Square className="w-3 h-3" />}
+                    label="1 PAG"
+                  />
+                  <ModeButton 
+                    active={settings.viewMode === 'double'} 
+                    onClick={() => onSettingsChange({ viewMode: 'double' })}
+                    icon={<Columns className="w-3 h-3" />}
+                    label="2 PAGS"
+                  />
+                </div>
                 
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={handleExportPNG}
+                    className="p-3 bg-white/5 hover:bg-neutral-800 rounded-2xl transition-all text-neutral-400 group flex items-center gap-2"
+                    title="Export as PNG"
+                  >
+                    <FileImage className="w-4 h-4" />
+                    <span className="text-[8px] uppercase tracking-widest font-black hidden lg:inline">PNG</span>
+                  </button>
+                  <button 
+                    onClick={handleExportPDF}
+                    className="p-3 bg-white/5 hover:bg-neutral-800 rounded-2xl transition-all text-neutral-400 group flex items-center gap-2"
+                    title="Export as PDF"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span className="text-[8px] uppercase tracking-widest font-black hidden lg:inline">PDF</span>
+                  </button>
+                </div>
+
                 <button 
                   onClick={() => {
                     if (!document.fullscreenElement) {
@@ -138,7 +208,7 @@ export function ReaderControls({
 
               <div className="flex items-center justify-between">
                 <button 
-                  onClick={() => onPageChange(currentIndex - 1)}
+                  onClick={() => onPageChange(currentIndex - (settings.viewMode === 'double' ? 2 : 1))}
                   disabled={currentIndex === 0}
                   className="text-[10px] uppercase tracking-[0.4em] font-black hover:text-brand disabled:opacity-20 transition-colors"
                 >
@@ -150,8 +220,8 @@ export function ReaderControls({
                 </div>
 
                 <button 
-                  onClick={() => onPageChange(currentIndex + 1)}
-                  disabled={currentIndex === manga.pages.length - 1}
+                  onClick={() => onPageChange(currentIndex + (settings.viewMode === 'double' ? 2 : 1))}
+                  disabled={currentIndex >= manga.pages.length - 1}
                   className="bg-brand text-white px-8 py-3 text-[10px] uppercase tracking-[0.4em] font-black hover:scale-105 active:scale-95 transition-all rounded-full shadow-lg shadow-brand/20"
                 >
                   Next →

@@ -17,6 +17,7 @@ export default function App() {
   const [showControls, setShowControls] = useState(true);
   const [settings, setSettings] = useState<ReaderSettings>({
     mode: 'horizontal-rtl',
+    viewMode: 'single',
     zoom: 1,
     showControls: true,
     fitMode: 'contain'
@@ -28,13 +29,14 @@ export default function App() {
       if (!currentManga) return;
 
       const isRTL = settings.mode === 'horizontal-rtl';
+      const step = settings.viewMode === 'double' ? 2 : 1;
       
       switch (e.key) {
         case 'ArrowRight':
-          handlePageChange(isRTL ? currentIndex - 1 : currentIndex + 1);
+          handlePageChange(isRTL ? currentIndex - step : currentIndex + step);
           break;
         case 'ArrowLeft':
-          handlePageChange(isRTL ? currentIndex + 1 : currentIndex - 1);
+          handlePageChange(isRTL ? currentIndex + step : currentIndex - step);
           break;
         case ' ':
           e.preventDefault();
