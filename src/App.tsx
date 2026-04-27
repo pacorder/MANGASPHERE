@@ -15,17 +15,48 @@ import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
 import { About } from './pages/About';
 
-function AdPlaceholder({ position }: { position: 'top' | 'bottom' | 'sidebar' }) {
+import { Heart, ExternalLink } from 'lucide-react';
+
+function DonationBanner() {
   return (
-    <div className={`ad-container flex items-center justify-center bg-white/5 border border-white/10 text-[10px] uppercase tracking-[0.3em] text-neutral-600 font-black overflow-hidden rounded-2xl
-      ${position === 'top' ? 'w-full h-24 mb-8' : ''}
-      ${position === 'bottom' ? 'w-full h-24 mt-8' : ''}
-    `}>
-      <div className="flex items-center gap-4">
-        <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
-        Ad Space // Espacio para Publicidad
+    <a 
+      href="https://www.paypal.com/donate/?hosted_button_id=BY3KWLCEW4ZNW" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="group relative w-full h-32 mb-12 flex items-center justify-between px-8 md:px-12 bg-white/[0.03] border border-white/10 rounded-[2.5rem] overflow-hidden transition-all duration-700 hover:bg-brand/[0.08] hover:border-brand/50 hover:scale-[1.01] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)]"
+    >
+      <div className="flex items-center gap-6 z-10">
+        <div className="relative">
+          <div className="absolute inset-0 bg-brand blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
+          <div className="relative p-4 bg-brand rounded-2xl shadow-lg shadow-brand/20 group-hover:scale-110 transition-transform duration-500">
+            <Heart className="w-6 h-6 text-white fill-current" />
+          </div>
+        </div>
+        
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] uppercase tracking-[0.5em] font-black text-brand">Support MangaSphere</span>
+            <div className="w-12 h-px bg-brand/30" />
+          </div>
+          <h3 className="editorial-title text-3xl text-white italic">Mantenlo libre de anuncios.</h3>
+          <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-neutral-500 group-hover:text-neutral-400 transition-colors">Donar via PayPal apoya el desarrollo independiente y servidores.</p>
+        </div>
       </div>
-    </div>
+
+      <div className="hidden md:flex flex-col items-end gap-2 z-10">
+        <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full group-hover:bg-brand group-hover:border-brand transition-all duration-500">
+          <span className="text-[10px] uppercase tracking-widest font-black text-white">Donar Ahora</span>
+          <ExternalLink className="w-3 h-3 text-white" />
+        </div>
+      </div>
+      
+      {/* atmospheric detail */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-[2000ms] ease-in-out" />
+      
+      {/* Corner Accents */}
+      <div className="absolute top-6 left-6 w-3 h-3 border-t border-l border-white/20 group-hover:border-brand/40 transition-colors" />
+      <div className="absolute bottom-6 right-6 w-3 h-3 border-b border-r border-white/20 group-hover:border-brand/40 transition-colors" />
+    </a>
   );
 }
 
@@ -177,6 +208,10 @@ function MainApp() {
       <AnimatePresence mode="wait">
         {!currentManga ? (
           <div className="flex flex-col min-h-screen">
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-8 pt-8">
+              <DonationBanner />
+            </div>
+            
             <Routes>
               <Route path="/" element={<MangaUploader onUpload={handleUpload} />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -187,7 +222,6 @@ function MainApp() {
             {/* Home Footer for AdSense Compliance */}
             {isHome && (
               <footer className="relative z-10 w-full max-w-7xl mx-auto px-8 pb-12 mt-auto">
-                <AdPlaceholder position="bottom" />
                 <div className="flex flex-col md:flex-row justify-between items-center gap-8 border-t border-white/10 pt-12 text-[10px] uppercase tracking-[0.3em] font-black text-neutral-500">
                   <div className="flex gap-8">
                     <Link to="/about" className="hover:text-brand transition-colors">Sobre Nosotros</Link>
@@ -210,7 +244,7 @@ function MainApp() {
           >
             <div 
               className="flex-grow cursor-alias"
-              onClick={() => settings.mode !== 'vertical' && toggleControls()}
+              onClick={() => toggleControls()}
             >
               <MangaReader
                 manga={currentManga}
