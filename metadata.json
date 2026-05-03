@@ -1,6 +1,6 @@
 {
-  "name": "MangaSphere Viewer",
-  "description": "A modern, high-performance CBZ manga viewer for an immersive reading experience.",
+  "name": "VOLUMI",
+  "description": "Una plataforma editorial cinematográfica para leer Mangas (CBZ) y Libros (EPUB).",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

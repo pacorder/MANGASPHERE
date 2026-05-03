@@ -81,7 +81,7 @@ export function ReaderControls({
             </div>
             <div className="w-1 h-12 bg-brand" />
             <div className="text-[10px] uppercase tracking-[0.4em] font-black text-neutral-600 [writing-mode:vertical-rl] rotate-180">
-              MANGASPHERE EDITORIAL
+              VOLUMI EDITORIAL
             </div>
           </motion.div>
 

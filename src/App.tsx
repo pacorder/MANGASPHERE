@@ -5,8 +5,9 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { MangaUploader } from './components/MangaUploader';
+import { FileUploader } from './components/FileUploader';
 import { MangaReader } from './components/MangaReader';
+import { EpubReader } from './components/EpubReader';
 import { ReaderControls } from './components/ReaderControls';
 import { MangaFile, cleanupManga } from './lib/cbz';
 import { ReaderSettings } from './types/manga';
@@ -35,7 +36,7 @@ function DonationBanner() {
         
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
-            <span className="text-[10px] uppercase tracking-[0.5em] font-black text-brand">Support MangaSphere</span>
+            <span className="text-[10px] uppercase tracking-[0.5em] font-black text-brand">Support VOLUMI</span>
             <div className="w-12 h-px bg-brand/30" />
           </div>
           <h3 className="editorial-title text-3xl text-white italic">Mantenlo libre de anuncios.</h3>
@@ -119,6 +120,7 @@ function CookieConsent() {
 
 function MainApp() {
   const [currentManga, setCurrentManga] = useState<MangaFile | null>(null);
+  const [currentEpub, setCurrentEpub] = useState<File | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const location = useLocation();
@@ -133,7 +135,8 @@ function MainApp() {
   // Handle Keyboard Navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!currentManga) return;
+      if (!currentManga && !currentEpub) return;
+      if (currentEpub) return; // EpubReader has its own listeners
 
       const isRTL = settings.mode === 'horizontal-rtl';
       const step = settings.viewMode === 'double' ? 2 : 1;
@@ -165,12 +168,18 @@ function MainApp() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentManga, currentIndex, settings.mode, settings.viewMode]);
+  }, [currentManga, currentEpub, currentIndex, settings.mode, settings.viewMode]);
 
-  const handleUpload = useCallback((manga: MangaFile) => {
+  const handleMangaUpload = useCallback((manga: MangaFile) => {
     setCurrentManga(manga);
+    setCurrentEpub(null);
     setCurrentIndex(0);
     setShowControls(true);
+  }, []);
+
+  const handleEpubUpload = useCallback((file: File) => {
+    setCurrentEpub(file);
+    setCurrentManga(null);
   }, []);
 
   const handlePageChange = useCallback((index: number) => {
@@ -189,6 +198,7 @@ function MainApp() {
       cleanupManga(currentManga);
       setCurrentManga(null);
     }
+    setCurrentEpub(null);
   }, [currentManga]);
 
   const toggleControls = useCallback(() => {
@@ -197,7 +207,7 @@ function MainApp() {
 
   // Hide footer when reading
   const isHome = location.pathname === '/';
-  const hideChrome = !!currentManga && isHome;
+  const hideChrome = (!!currentManga || !!currentEpub) && isHome;
 
   return (
     <div className="relative min-h-screen selection:bg-brand/30 bg-[#0d0d0d] overflow-x-hidden">
@@ -206,14 +216,14 @@ function MainApp() {
       <CookieConsent />
 
       <AnimatePresence mode="wait">
-        {!currentManga ? (
+        {!currentManga && !currentEpub ? (
           <div className="flex flex-col min-h-screen">
             <div className="relative z-10 w-full max-w-7xl mx-auto px-8 pt-8">
               <DonationBanner />
             </div>
             
             <Routes>
-              <Route path="/" element={<MangaUploader onUpload={handleUpload} />} />
+              <Route path="/" element={<FileUploader onMangaUpload={handleMangaUpload} onEpubUpload={handleEpubUpload} />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/about" element={<About />} />
@@ -229,13 +239,13 @@ function MainApp() {
                     <Link to="/terms" className="hover:text-brand transition-colors">Términos</Link>
                   </div>
                   <div className="text-neutral-700">
-                    © 2026 MANGASPHERE BY ZEN. ALL RIGHTS RESERVED.
+                    © 2026 VOLUMI BY ZEN. ALL RIGHTS RESERVED.
                   </div>
                 </div>
               </footer>
             )}
           </div>
-        ) : (
+        ) : currentManga ? (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -264,6 +274,11 @@ function MainApp() {
               visible={showControls}
             />
           </motion.div>
+        ) : (
+          <EpubReader 
+            file={currentEpub!} 
+            onClose={handleClose} 
+          />
         )}
       </AnimatePresence>
 
@@ -290,7 +305,7 @@ function MainApp() {
       {!hideChrome && (
         <div className="fixed bottom-12 right-12 z-50 pointer-events-none">
           <div className="flex flex-col items-end opacity-20 hover:opacity-100 transition-opacity duration-700">
-            <span className="editorial-title text-2xl italic tracking-tighter text-white">MangaSphere.</span>
+            <span className="editorial-title text-2xl italic tracking-tighter text-white">VOLUMI.</span>
             <span className="text-[8px] uppercase tracking-[0.6em] font-black mr-1">Premium Reader</span>
           </div>
         </div>

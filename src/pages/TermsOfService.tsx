@@ -20,17 +20,17 @@ export function TermsOfService() {
         <div className="space-y-8 text-sm leading-relaxed tracking-wide">
           <section>
             <h2 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">// Uso de la Aplicación</h2>
-            <p>MangaSphere es una herramienta de visualización. El usuario es el único responsable del contenido legal que visualiza utilizando nuestra plataforma.</p>
+            <p>VOLUMI es una herramienta de visualización. El usuario es el único responsable del contenido legal que visualiza utilizando nuestra plataforma.</p>
           </section>
 
           <section>
             <h2 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">// Propiedad Intelectual</h2>
-            <p>No reclamamos propiedad sobre los archivos cargados por el usuario. La interfaz y el código de MangaSphere son propiedad exclusiva de sus creadores.</p>
+            <p>No reclamamos propiedad sobre los archivos cargados por el usuario. La interfaz y el código de VOLUMI son propiedad exclusiva de sus creadores.</p>
           </section>
 
           <section>
             <h2 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">// Limitación de Responsabilidad</h2>
-            <p>MangaSphere se proporciona "tal cual" sin garantías de ningún tipo. No nos hacemos responsables de pérdidas de datos resultantes del uso de la aplicación.</p>
+            <p>VOLUMI se proporciona "tal cual" sin garantías de ningún tipo. No nos hacemos responsables de pérdidas de datos resultantes del uso de la aplicación.</p>
           </section>
         </div>
       </motion.div>

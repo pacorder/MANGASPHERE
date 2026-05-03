@@ -20,12 +20,12 @@ export function PrivacyPolicy() {
         <div className="space-y-8 text-sm leading-relaxed tracking-wide">
           <section>
             <h2 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">// Introducción</h2>
-            <p>En MangaSphere, valoramos tu privacidad. Esta política describe cómo manejamos la información en nuestra plataforma de visualización de archivos CBZ.</p>
+            <p>En VOLUMI, valoramos tu privacidad. Esta política describe cómo manejamos la información en nuestra plataforma de visualización de archivos CBZ y EPUB.</p>
           </section>
 
           <section>
             <h2 className="text-white font-bold mb-4 uppercase tracking-widest text-xs">// Datos Locales</h2>
-            <p>MangaSphere procesa tus archivos .cbz localmente en tu navegador. Nosotros NO subimos tus archivos de manga a nuestros servidores. Todo el procesamiento de imágenes ocurre en tu dispositivo.</p>
+            <p>VOLUMI procesa tus archivos localmente en tu navegador. Nosotros NO subimos tus archivos a nuestros servidores. Todo el procesamiento ocurre en tu dispositivo.</p>
           </section>
 
           <section>

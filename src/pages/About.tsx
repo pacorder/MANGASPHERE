@@ -15,14 +15,14 @@ export function About() {
           <ChevronLeft className="w-4 h-4" /> Volver al Inicio
         </Link>
         
-        <h1 className="editorial-title text-5xl md:text-7xl text-white mb-12">Sobre MangaSphere</h1>
+        <h1 className="editorial-title text-5xl md:text-7xl text-white mb-12">Sobre VOLUMI</h1>
         
         <div className="space-y-8 text-sm leading-relaxed tracking-wide">
           <p className="text-lg text-white font-medium italic">
-            "Redefiniendo la forma en que los entusiastas del manga interactúan con sus colecciones digitales."
+            "Redefiniendo la forma en que los entusiastas de la lectura interactúan con sus colecciones digitales."
           </p>
           
-          <p>MangaSphere nació como un proyecto dedicado a la excelencia visual y la simplicidad técnica. Nuestra misión es proporcionar el visor de archivos CBZ más fluido, moderno y cinematográfico disponible en la web.</p>
+          <p>VOLUMI nació como un proyecto dedicado a la excelencia visual y la simplicidad técnica. Nuestra misión es proporcionar el visor de archivos CBZ y EPUB más fluido, moderno y cinematográfico disponible en la web.</p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
             <div className="p-6 border border-white/5 bg-white/5 rounded-2xl">

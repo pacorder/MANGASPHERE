@@ -1,34 +1,43 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, FileArchive, Loader2 } from 'lucide-react';
+import { Upload, FileArchive, Loader2, BookOpen } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { processCBZ, MangaFile } from '@/src/lib/cbz';
 import { motion, AnimatePresence } from 'motion/react';
 
-interface MangaUploaderProps {
-  onUpload: (manga: MangaFile) => void;
+interface FileUploaderProps {
+  onMangaUpload: (manga: MangaFile) => void;
+  onEpubUpload: (file: File) => void;
 }
 
-export function MangaUploader({ onUpload }: MangaUploaderProps) {
+export function FileUploader({ onMangaUpload, onEpubUpload }: FileUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFile = useCallback(async (file: File) => {
-    if (!file.name.toLowerCase().endsWith('.cbz')) {
-      alert('Por favor, sube un archivo .cbz');
+    const isCBZ = file.name.toLowerCase().endsWith('.cbz');
+    const isEPUB = file.name.toLowerCase().endsWith('.epub');
+
+    if (!isCBZ && !isEPUB) {
+      alert('Por favor, sube un archivo .cbz o .epub');
+      return;
+    }
+
+    if (isEPUB) {
+      onEpubUpload(file);
       return;
     }
 
     setIsProcessing(true);
     try {
       const manga = await processCBZ(file);
-      onUpload(manga);
+      onMangaUpload(manga);
     } catch (error) {
       console.error('Error al procesar el manga:', error);
       alert('Error al procesar el archivo CBZ.');
     } finally {
       setIsProcessing(false);
     }
-  }, [onUpload]);
+  }, [onMangaUpload, onEpubUpload]);
 
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -58,22 +67,22 @@ export function MangaUploader({ onUpload }: MangaUploaderProps) {
         >
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-0.5 bg-brand" />
-            <span className="text-xs uppercase tracking-[0.5em] font-bold text-brand">V.2.04 • ZEN VIEWER</span>
+            <span className="text-xs uppercase tracking-[0.5em] font-bold text-brand">V.3.1.0 • ZEN PROTOCOL</span>
           </div>
           
           <h1 className="editorial-title text-[12vw] md:text-[8rem] text-white leading-none">
-            Manga<br/>
-            <span className="text-brand">Sphere</span>
+            VOL<br/>
+            <span className="text-brand">UMI.</span>
           </h1>
           
           <div className="mt-12 flex gap-12 text-[10px] uppercase tracking-[0.3em] font-medium text-neutral-500">
             <div className="space-y-1">
               <p className="text-neutral-400">Optimized for</p>
-              <p>IMMERSIÓN TOTAL</p>
+              <p>Manga & eBooks</p>
             </div>
             <div className="space-y-1">
-              <p className="text-neutral-400">Format</p>
-              <p>COMIC ARCHIVE (.CBZ)</p>
+              <p className="text-neutral-400">Formats</p>
+              <p>CBZ / EPUB</p>
             </div>
           </div>
         </motion.div>
@@ -97,7 +106,7 @@ export function MangaUploader({ onUpload }: MangaUploaderProps) {
           >
             <input
               type="file"
-              accept=".cbz"
+              accept=".cbz,.epub"
               onChange={onFileChange}
               className="absolute inset-0 opacity-0 cursor-pointer z-20"
               disabled={isProcessing}
@@ -121,11 +130,11 @@ export function MangaUploader({ onUpload }: MangaUploaderProps) {
                   className="flex flex-col items-center text-center p-8"
                 >
                   <div className="mb-8 p-6 rounded-full border border-white/10 group-hover:bg-brand group-hover:border-brand transition-all duration-500">
-                    <FileArchive className="w-8 h-8" />
+                    <BookOpen className="w-8 h-8" />
                   </div>
                   <h3 className="text-sm font-bold tracking-widest mb-2 uppercase">Cargar archivo</h3>
                   <p className="text-[10px] text-neutral-500 tracking-[0.2em] uppercase leading-relaxed">
-                    Arrastra tu archivo aquí para iniciar la secuencia de lectura
+                    Sube tu .cbz o .epub para iniciar la secuencia de lectura inmersiva
                   </p>
                 </motion.div>
               )}
