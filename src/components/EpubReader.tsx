@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, ChangeEvent } from 'react';
 import ePub, { Rendition, Book } from 'epubjs';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, Settings, Maximize2, X, List } from 'lucide-react';
@@ -17,6 +17,7 @@ export function EpubReader({ file, onClose }: EpubReaderProps) {
   const [toc, setToc] = useState<any[]>([]);
   const [showToc, setShowToc] = useState(false);
   const [location, setLocation] = useState<any>(null);
+  const [progress, setProgress] = useState(0);
   const [fontSize, setFontSize] = useState(100);
 
   useEffect(() => {
@@ -45,25 +46,39 @@ export function EpubReader({ file, onClose }: EpubReaderProps) {
         book.loaded.metadata.then((meta) => setMetadata(meta));
         book.loaded.navigation.then((nav) => setToc(nav.toc));
 
-        rendition.on('relocated', (location: any) => {
-          setLocation(location);
+        // Generate locations for progress bar
+        book.ready.then(() => {
+          return book.locations.generate(1000);
+        }).then(() => {
+          setIsLoaded(true);
         });
 
-        // Aplicar estilos iniciales
-        rendition.themes.default({
-          'body': {
-            'background': 'transparent !important',
-            'color': '#d4d4d4 !important',
-            'font-family': "'Inter', sans-serif !important",
-            'line-height': '1.6 !important',
-            'padding': '0 40px !important'
-          },
-          'h1, h2, h3, h4, h5, h6': {
-            'color': '#ffffff !important'
+        rendition.on('relocated', (location: any) => {
+          setLocation(location);
+          if (book.locations) {
+            const percent = book.locations.percentageFromCfi(location.start.cfi);
+            setProgress(Math.floor(percent * 100));
           }
         });
 
-        setIsLoaded(true);
+        // Aplicar estilos iniciales - TEMA BLANCO
+        rendition.themes.default({
+          'body': {
+            'background': '#ffffff !important',
+            'color': '#262626 !important',
+            'font-family': "'Inter', sans-serif !important",
+            'line-height': '1.7 !important',
+            'padding': '0 60px !important'
+          },
+          'h1, h2, h3, h4, h5, h6': {
+            'color': '#000000 !important',
+            'margin-bottom': '1em !important'
+          },
+          'p': {
+            'margin-bottom': '1.2em !important'
+          }
+        });
+
       }
     };
     reader.readAsArrayBuffer(file);
@@ -99,6 +114,16 @@ export function EpubReader({ file, onClose }: EpubReaderProps) {
       renditionRef.current?.themes.fontSize(`${newSize}%`);
     }
   };
+
+  const handleProgressChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    setProgress(value);
+    if (bookRef.current && bookRef.current.locations) {
+      const cfi = bookRef.current.locations.cfiFromPercentage(value / 100);
+      renditionRef.current?.display(cfi);
+    }
+  };
+
 
   return (
     <div className="fixed inset-0 z-[100] bg-[#0d0d0d] flex flex-col overflow-hidden">
@@ -164,8 +189,8 @@ export function EpubReader({ file, onClose }: EpubReaderProps) {
           )}
         </AnimatePresence>
 
-        <div className="flex-grow relative bg-[#0b0b0b]">
-           <div ref={viewerRef} className="w-full h-full max-w-3xl mx-auto" />
+        <div className="flex-grow relative bg-white">
+           <div ref={viewerRef} className="w-full h-full max-w-4xl mx-auto shadow-[0_0_100px_rgba(0,0,0,0.1)]" />
            
            {/* Navigation Hitboxes */}
            <div 
@@ -180,30 +205,54 @@ export function EpubReader({ file, onClose }: EpubReaderProps) {
       </div>
 
       {/* Footer Controls */}
-      <div className="relative z-10 px-8 py-6 flex items-center justify-between bg-black/40 backdrop-blur-md border-t border-white/5 mt-auto">
-        <button 
-          onClick={prevPage}
-          className="group flex items-center gap-3 text-[10px] uppercase tracking-[0.4em] font-black text-neutral-500 hover:text-white transition-all"
-        >
-          <div className="p-2 border border-white/10 rounded-full group-hover:border-white transition-colors">
-            <ChevronLeft className="w-4 h-4" />
+      <div className="relative z-10 px-8 py-4 flex flex-col gap-4 bg-black/80 backdrop-blur-xl border-t border-white/5 mt-auto">
+        {/* Progress Bar */}
+        <div className="flex items-center gap-6 px-4">
+          <span className="text-[9px] font-black text-neutral-500 w-8 text-right">{progress}%</span>
+          <div className="flex-grow relative h-8 flex items-center group/progress">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={progress}
+              onChange={handleProgressChange}
+              className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand hover:h-1.5 transition-all"
+            />
+            <div 
+              className="absolute h-1 bg-brand rounded-full pointer-events-none transition-all group-hover/progress:h-1.5"
+              style={{ width: `${progress}%` }}
+            />
           </div>
-          Anterior
-        </button>
-
-        <div className="text-[9px] uppercase tracking-[0.5em] font-black text-neutral-600 hidden md:block">
-          VOLUMI CINEMATIC INTERFACE
+          <span className="text-[9px] font-black text-neutral-500 w-8">100%</span>
         </div>
 
-        <button 
-          onClick={nextPage}
-          className="group flex items-center gap-3 text-[10px] uppercase tracking-[0.4em] font-black text-neutral-500 hover:text-white transition-all"
-        >
-          Siguiente
-          <div className="p-2 bg-brand text-white rounded-full shadow-lg shadow-brand/20 group-hover:scale-110 transition-all">
-            <ChevronRight className="w-4 h-4" />
+        <div className="flex items-center justify-between">
+          <button 
+            onClick={prevPage}
+            className="group flex items-center gap-3 text-[10px] uppercase tracking-[0.4em] font-black text-neutral-400 hover:text-white transition-all"
+          >
+            <div className="p-2 border border-white/10 rounded-full group-hover:border-white transition-colors">
+              <ChevronLeft className="w-3 h-3" />
+            </div>
+            Prev
+          </button>
+
+          <div className="text-[8px] uppercase tracking-[0.5em] font-black text-neutral-600 hidden md:flex items-center gap-3">
+            <div className="w-8 h-px bg-white/5" />
+            VOLUMI CINEMATIC INTERFACE
+            <div className="w-8 h-px bg-white/5" />
           </div>
-        </button>
+
+          <button 
+            onClick={nextPage}
+            className="group flex items-center gap-3 text-[10px] uppercase tracking-[0.4em] font-black text-neutral-400 hover:text-white transition-all"
+          >
+            Next
+            <div className="p-2 bg-brand text-white rounded-full shadow-lg shadow-brand/20 group-hover:scale-110 transition-all">
+              <ChevronRight className="w-3 h-3" />
+            </div>
+          </button>
+        </div>
       </div>
       
       <div className="grain pointer-events-none opacity-[0.03]" />
